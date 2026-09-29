@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ru">
+  <head><meta charset="utf-8"><title>Вход</title></head>
+  <body>
+    <form id="login-form">
+      <input type="email" placeholder="Адрес электронной почты" required>
+      <input type="password" required>
+      <button type="submit">Вход</button>
+    </form>
+    <script>
+      document.getElementById('login-form').addEventListener('submit', (event) => {
+        event.preventDefault();
+        window.location.href = '/catalog.html';
+      });
+    </script>
+  </body>
+</html>

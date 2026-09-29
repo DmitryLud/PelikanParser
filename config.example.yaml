@@ -1,0 +1,110 @@
+# Скопируйте файл в config.yaml и заполните URL.
+site:
+  login_url: "https://example.com/login"
+  # Если после входа каталог не открывается автоматически, укажите его URL.
+  catalog_url: ""
+
+browser:
+  # Для первой настройки оставьте false: будет видно, что делает браузер.
+  headless: false
+  slow_mo_ms: 50
+  timeout_ms: 20000
+  results_timeout_ms: 15000
+  after_search_delay_ms: 1200
+  after_expand_delay_ms: 300
+  delay_between_codes_ms: 1000
+  ignore_https_errors: false
+  # Обычно оставьте пустым. Можно указать "chrome", чтобы использовать Chrome.
+  channel: ""
+  # Сессия сохраняется локально, чтобы не входить заново при каждом запуске.
+  storage_state_path: ".session/state.json"
+  save_session: true
+  # При CAPTCHA/одноразовом коде задайте, например, 120.
+  manual_login_timeout_seconds: 0
+
+input:
+  path: "input/eurocodes.xlsx"
+  sheet: "Eurocodes"
+  column: "Eurocode"
+  header_row: 1
+  deduplicate: true
+
+output:
+  path: "output/results.xlsx"
+  include_diagnostics: true
+
+debug:
+  save_on_error: true
+  directory: "debug"
+
+# Локаторы проверяются сверху вниз. Поддерживаются:
+#   css=...; xpath=...; placeholder=...; label=...; text=...;
+#   role=button|Название кнопки; testid=...
+# Строка без префикса считается CSS-селектором.
+selectors:
+  login:
+    email:
+      - "placeholder=Адрес электронной почты"
+      - "css=input[type='email']"
+      - "css=input[name='email']"
+    password:
+      - "css=input[type='password']"
+      - "css=input[name='password']"
+    submit:
+      - "role=button|Вход"
+      - "text=Вход"
+      - "css=button[type='submit']"
+    # Можно оставить пустым: успешный вход определяется по полю поиска.
+    success_marker: []
+
+  catalog:
+    search_input:
+      - "placeholder=Наименование | еврокод | OEM номер"
+      - "css=input[type='search']"
+      - "css=input[name*='search']"
+    search_submit:
+      - "role=button|Поиск"
+      - "text=Поиск"
+    # Необязательно: кнопка очистки формы перед следующим запросом.
+    clear: []
+
+  results:
+    # Точные селекторы по присланному HTML. Они не зависят от длинных
+    # Tailwind-классов и опираются на постоянные подписи полей.
+    item:
+      - "xpath=//ul/li/article[.//span[normalize-space()='Производитель:'] and .//span[normalize-space()='Еврокод:']]"
+      - "css=.product-card"
+      - "css=.catalog-item"
+      - "css=.product-item"
+      - "css=.search-result"
+      - "css=[class*='product'][class*='card']"
+      - "xpath=//*[contains(., 'Производитель:') and contains(., 'Еврокод:') and not(.//*[contains(., 'Производитель:') and contains(., 'Еврокод:')])]"
+    manufacturer:
+      - "xpath=.//p[span[normalize-space()='Производитель:']]"
+      - "css=[class*='manufacturer']"
+      - "xpath=.//*[contains(normalize-space(.), 'Производитель:')]"
+    price:
+      - "xpath=.//p[contains(normalize-space(.), '₽')]"
+      - "css=[class*='price']"
+      - "css=[data-price]"
+    availability:
+      - "xpath=.//*[contains(normalize-space(.), 'Наличие на складе:') and not(.//*[contains(normalize-space(.), 'Наличие на складе:')])]"
+      - "css=[class*='availability']"
+      - "css=[class*='stock']"
+      - "xpath=.//*[contains(normalize-space(.), 'Наличие на складе:')]"
+    # В присланном HTML цена уже видима, раскрывать описание не требуется.
+    # Если сайт изменится и цена станет скрытой, добавьте сюда:
+    #   - "text=Раскрыть расширенное описание"
+    expand: []
+    empty:
+      - "text=По вашему запросу ничего не найдено"
+      - "text=Ничего не найдено"
+      - "text=Товар не найден"
+      - "text=Нет результатов"
+
+patterns:
+  manufacturer: "(?im)Производитель\\s*:\\s*([^\\r\\n]+)"
+  # Шаблон специально требует обозначение валюты, чтобы OEM-номер не стал ценой.
+  # Если на сайте цена показана только числом, настройте этот шаблон после просмотра HTML.
+  price: "(?i)(?P<price>\\d{1,3}(?:[ \\u00A0]\\d{3})*(?:[.,]\\d{1,2})?)\\s*(?:₽|руб(?:\\.|лей)?|RUB|BYN|Br)(?!\\w)"
+  availability: "(?im)Наличие(?: на складе)?\\s*:\\s*([^\\r\\n]+)"

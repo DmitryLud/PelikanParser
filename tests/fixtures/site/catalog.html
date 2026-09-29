@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ru">
+  <head><meta charset="utf-8"><title>Каталог</title></head>
+  <body>
+    <input id="search" placeholder="Наименование | еврокод | OEM номер">
+    <button id="find">Поиск</button>
+    <ul id="results" class="flex flex-col gap-2"></ul>
+    <span id="empty" hidden>По вашему запросу ничего не найдено</span>
+    <script>
+      const data = {
+        '2485AGACMUVZ': [
+          {manufacturer: 'FYG', price: '15 000 руб.'},
+          {manufacturer: 'BENSON', price: '12 750,50 руб.'},
+          {manufacturer: 'BMW', price: ''}
+        ],
+        'NO-STOCK': [
+          {manufacturer: 'FYG', price: ''},
+          {manufacturer: 'BENSON', price: ''}
+        ]
+      };
+      document.getElementById('find').addEventListener('click', () => {
+        const code = document.getElementById('search').value.trim();
+        const rows = data[code] || [];
+        const target = document.getElementById('results');
+        target.innerHTML = '';
+        document.getElementById('empty').hidden = rows.length !== 0;
+        for (const row of rows) {
+          const item = document.createElement('li');
+          const card = document.createElement('article');
+          card.className = 'rounded-pel-lg bg-pel-gray-light';
+          card.innerHTML = `
+            <section>
+              <p><span>Производитель:</span> ${row.manufacturer}</p>
+              <p><span>Еврокод:</span> ${code}</p>
+            </section>
+            <section>
+              <div class="bg-pel-white">
+                ${row.price ? `<p>${row.price}</p>` : ''}
+                <p>Наличие на складе:<span> ${row.price ? '> 5' : 'отсутствует'}</span></p>
+              </div>
+            </section>
+          `;
+          item.appendChild(card);
+          target.appendChild(item);
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.env
+config.yaml
+.session/
+output/*.xlsx
+debug/
+dist/
+build/
+*.egg-info/
+.tmp_artifact/
