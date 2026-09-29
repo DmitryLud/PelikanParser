@@ -1,14 +1,14 @@
-# Скопируйте файл в config.yaml и заполните URL.
+# setup.bat копирует этот файл в config.yaml. Для обычного запуска менять
+# URL и селекторы не требуется: они уже настроены для lk.pelikan-ag.ru.
 site:
-  login_url: "https://example.com/login"
-  # Если после входа каталог не открывается автоматически, укажите его URL.
-  catalog_url: ""
+  login_url: "https://lk.pelikan-ag.ru/login"
+  catalog_url: "https://lk.pelikan-ag.ru/"
 
 browser:
   # Для первой настройки оставьте false: будет видно, что делает браузер.
   headless: false
   slow_mo_ms: 50
-  timeout_ms: 20000
+  timeout_ms: 60000
   results_timeout_ms: 15000
   after_search_delay_ms: 1200
   after_expand_delay_ms: 300
@@ -44,21 +44,28 @@ debug:
 selectors:
   login:
     email:
+      - "css=#mail"
+      - "css=input[name='username']"
+      - "label=Адрес электронной почты"
       - "placeholder=Адрес электронной почты"
       - "css=input[type='email']"
-      - "css=input[name='email']"
     password:
-      - "css=input[type='password']"
+      - "css=#password"
       - "css=input[name='password']"
+      - "label=Пароль"
+      - "placeholder=Пароль"
+      - "css=input[type='password']"
     submit:
+      - "css=form button[type='submit']"
       - "role=button|Вход"
       - "text=Вход"
-      - "css=button[type='submit']"
     # Можно оставить пустым: успешный вход определяется по полю поиска.
     success_marker: []
 
   catalog:
     search_input:
+      - "css=input[data-slot='input'][placeholder='Наименование | еврокод | OEM номер']"
+      - "css=input[placeholder='Наименование | еврокод | OEM номер']"
       - "placeholder=Наименование | еврокод | OEM номер"
       - "css=input[type='search']"
       - "css=input[name*='search']"

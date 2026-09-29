@@ -2,7 +2,7 @@
 <html lang="ru">
   <head><meta charset="utf-8"><title>Каталог</title></head>
   <body>
-    <input id="search" placeholder="Наименование | еврокод | OEM номер">
+    <input id="base-ui-_r_44_" data-slot="input" type="text" placeholder="Наименование | еврокод | OEM номер" required>
     <button id="find">Поиск</button>
     <ul id="results" class="flex flex-col gap-2"></ul>
     <span id="empty" hidden>По вашему запросу ничего не найдено</span>
@@ -19,7 +19,7 @@
         ]
       };
       document.getElementById('find').addEventListener('click', () => {
-        const code = document.getElementById('search').value.trim();
+        const code = document.getElementById('base-ui-_r_44_').value.trim();
         const rows = data[code] || [];
         const target = document.getElementById('results');
         target.innerHTML = '';

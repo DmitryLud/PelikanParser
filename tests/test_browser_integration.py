@@ -52,12 +52,14 @@ class BrowserIntegrationTests(unittest.TestCase):
                     },
                     "selectors": {
                         "login": {
-                            "email": ["placeholder=Адрес электронной почты"],
-                            "password": ["css=input[type='password']"],
-                            "submit": ["role=button|Вход"],
+                            "email": ["css=#mail"],
+                            "password": ["css=#password"],
+                            "submit": ["css=form button[type='submit']"],
                         },
                         "catalog": {
-                            "search_input": ["placeholder=Наименование | еврокод | OEM номер"],
+                            "search_input": [
+                                "css=input[data-slot='input'][placeholder='Наименование | еврокод | OEM номер']"
+                            ],
                             "search_submit": ["role=button|Поиск"],
                         },
                         "results": {

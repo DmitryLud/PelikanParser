@@ -42,7 +42,7 @@ class SiteParser:
 
     @property
     def timeout_ms(self) -> int:
-        return int(self.browser_settings.get("timeout_ms", 20000))
+        return int(self.browser_settings.get("timeout_ms", 60000))
 
     def __enter__(self) -> "SiteParser":
         self._playwright = sync_playwright().start()
@@ -144,16 +144,26 @@ class SiteParser:
         search_specs = self.catalog_selectors.get("search_input", [])
         catalog_url = str(self.site.get("catalog_url", "")).strip()
         start_url = catalog_url or str(self.site["login_url"])
-        self.page.goto(start_url, wait_until="domcontentloaded")
+        self.page.goto(start_url, wait_until="commit", timeout=self.timeout_ms)
         if self._wait_until_visible(search_specs, min(self.timeout_ms, 5000)):
             return
 
-        self.page.goto(str(self.site["login_url"]), wait_until="domcontentloaded")
+        self.page.goto(
+            str(self.site["login_url"]),
+            wait_until="commit",
+            timeout=self.timeout_ms,
+        )
         if not self.email or not self.password:
             raise ConfigurationError(
                 "Для входа нужны PELIKAN_EMAIL и PELIKAN_PASSWORD в файле .env."
             )
-        email = self._first_matching(self.page, self.login_selectors.get("email", []), "поле email")
+        email_specs = self.login_selectors.get("email", [])
+        if not self._wait_until_visible(email_specs, self.timeout_ms):
+            raise LocatorNotFoundError(
+                "Форма входа не появилась за отведенное время. "
+                "Проверьте доступность сайта и selectors.login.email."
+            )
+        email = self._first_matching(self.page, email_specs, "поле email")
         password = self._first_matching(self.page, self.login_selectors.get("password", []), "поле пароля")
         submit = self._first_matching(self.page, self.login_selectors.get("submit", []), "кнопка входа")
         assert email is not None and password is not None and submit is not None
@@ -166,7 +176,7 @@ class SiteParser:
         wait_ms = max(self.timeout_ms, manual_seconds * 1000)
         if not self._wait_until_visible(success_specs, wait_ms):
             if catalog_url:
-                self.page.goto(catalog_url, wait_until="domcontentloaded")
+                self.page.goto(catalog_url, wait_until="commit", timeout=self.timeout_ms)
             if not self._wait_until_visible(search_specs, self.timeout_ms):
                 raise LocatorNotFoundError(
                     "Вход не подтвержден: поле поиска каталога не появилось. "
